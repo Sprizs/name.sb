@@ -1,0 +1,58 @@
+{% extends "admin_base.html" %}
+{% block content %}
+{% if offers is number%}
+{% if offers==0 %}
+    <p>暂时没有未处理的报价</p>
+    {% else %}
+    <p>您有 {{ offers }} 个未处理的报价</p>
+{% endif %}
+{% else %}
+    {% if detail2 %}
+        <a class="btn btn-primary" href="./offer?detail=1">只查看未处理的请求</a>
+    {% else %}
+        <a class="btn btn-primary" href="./offer?detail=1&include_processed=1">查看所有请求</a>
+    {% endif %}
+    {% if offers|count == 0 %}
+<p>暂时没有未处理的报价</p>{% else %}
+<div style="padding-top: 1em; padding-bottom: 1em">
+</div>
+<table class="table">
+    <tr><th>域名</th><th>报价</th><th>姓名</th><th>邮箱</th><th>时间</th><th>IP</th><td>操作</td></tr>
+    {% for x in offers %}
+        <tr><td><code>{{ x.domain }}</code></td>
+            <td>{{ x.message }}</td>
+            <td>{{ x.domain }}</td>
+            <td>{{ x.email }}</td>
+            <td>{{ x.time }}</td>
+            <td>{{ x.ip }}</td>
+            <td>{% if x.processed %}<button class="btn" disabled>已处理</button>
+                {% else %}<button id="btn-{{ x.id }}" class="btn btn-warning" onclick="markoffer({{ x.id }})">标记处理</button>
+            {% endif %}</td>
+        </tr>
+    {% endfor %}
+</table>
+    {% endif %}
+{% endif %}
+{% endblock %}
+{% block script %}
+<script>
+    function markoffer(id){
+        let form=new FormData();
+        form.append('id',id);
+        form.append('action','processed');
+        fetch('./offer',{
+            method:'POST',
+            body:form,
+            credentials:'same-origin'
+        }).then(resp=>{
+            if (resp.ok){
+                let btn=document.getElementById("btn-"+id);
+                btn.innerText="已处理";
+                btn.disabled=true;
+                btn.classList.remove("btn-warning");
+                return;
+            }
+            throw new Error('request failed');
+        }).catch(error=>console.log(error))
+    }
+</script>{% endblock %}

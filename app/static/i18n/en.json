@@ -1,0 +1,22 @@
+{
+  "@metadata":{
+    "authors":[
+      "Han Yuwei (hanyuwei70@gmail.com)"
+    ],
+    "locale":"en"
+  },
+  "mibiao-title-onsale":"is on sale!",
+  "mibiao-forsale-p2":"Should you are interested in, please leave your contact here",
+  "mibiao-lbl-email":"Your Email",
+  "mibiao-lbl-name":"Your name",
+  "mibiao-lbl-offer":"Your offer",
+  "mibiao-submit":"Submit",
+  "mibiao-submit-success":"Submit successful, refresh in 3 second",
+  "mibiao-submit-failed":"Submit failed",
+  "mibiao-contact-us":"Contact us",
+  "mibiao-domain":"Domain",
+  "mibiao-desc":"Description",
+  "mibiao-click-to-offer":"Make offer",
+  "mibiao-sales-representative":"Sales Representative",
+  "mibiao-no-contact":"No contact information available"
+}

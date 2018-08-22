@@ -1,0 +1,22 @@
+{
+  "@metadata":{
+    "authors":[
+      "Han Yuwei (hanyuwei70@gmail.com)"
+    ],
+    "locale":"zh-hans"
+  },
+  "mibiao-title-onsale":"正在出售！",
+  "mibiao-forsale-p2":"如果您对这个域名感兴趣，请留下您的联系方式",
+  "mibiao-lbl-email":"您的邮箱",
+  "mibiao-lbl-name":"您的姓名",
+  "mibiao-lbl-offer":"您的报价",
+  "mibiao-submit":"提交",
+  "mibiao-submit-success":"提交成功，3秒后刷新",
+  "mibiao-submit-failed":"提交失败",
+  "mibiao-contact-us":"联系我们",
+  "mibiao-domain":"域名",
+  "mibiao-desc":"描述",
+  "mibiao-click-to-offer":"点我报价",
+  "mibiao-sales-representative":"销售代表",
+  "mibiao-no-contact":"联系信息不详"
+}

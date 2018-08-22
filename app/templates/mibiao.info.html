@@ -1,0 +1,26 @@
+{% extends "admin_base.html" %}
+{% block title %}米表信息{% endblock %}
+{% block content %}
+    <h2>{% if mb %}修改米表{% else %}添加米表{% endif %}</h2>
+    <hr/>
+<form method="post" class="form-control no-border">
+{% if mb %}<input type="hidden" name="id" value="{{ mb.id }}">{% endif %}
+    <label>米表标题</label><input type="text" class="form-control" name="title" {% if mb and mb.title %}value="{{ mb.title }}"{% endif %}/>
+<br/>
+    <label for="sel-template">米表关联域名</label><input class="form-control" name="assign_domain" {% if mb and mb.assign_domain %}value="{{ mb.assign_domain }}"{% endif %}/>
+<br/>
+    <label>米表描述</label><input type="text" class="form-control" name="description" {% if mb and mb.description %}value="{{ mb.description }}"{% endif %}/>
+    <div class="row">
+    <div class="col-6">
+    <label for="sel-contact">米表联系人</label><select class="form-control" name="contact" id="sel-contact">
+    {% for x in contacts %}
+        <option value="{{ x.id }}">{{ x.id }}-{{ x.name }}</option>
+    {% endfor %}
+    </select><br/>
+    </div>
+    </div>
+<input class="btn btn-primary" type="submit" value="提交"/>
+{% if mb %}<input class="btn btn-danger mx-2" type="submit" formaction="{{ url_for("domain.mibiao",action="delete") }}" value="删除"/>{% endif %}
+</form>
+{% endblock %}
+{% block script %}<script>document.getElementById('on-focus').focus();</script>{% endblock %}

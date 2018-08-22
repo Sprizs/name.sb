@@ -1,0 +1,126 @@
+{% extends "admin_base.html" %}
+{% block content %}
+    <h2>批量添加域名</h2>
+    <p>请输入需要批量添加的域名，一行一个。域名和米表编号必填</p>
+    <p>格式 <code>域名|描述|米表编号</code></p>
+    <p>如:<br/>
+        <code>example1.net|example1|10<br/>example2.net|example2|10<br/>example3.net||15</code></p>
+    <p>注：米表编号即为在米表列表页面每个米表前的数字</p>
+    <textarea id="batch-domains" class="form-control " title="域名列表"></textarea>
+    <button class="btn btn-success my-2" onclick="addDomains()">开始添加</button>
+    <div id="batch-result">
+    <ul class="list-group">
+
+    </ul>
+    </div>
+{% endblock %}
+{% block script %}
+    <script>
+        async function addDomains() {
+            let text=$('#batch-domains').val();
+            let domains=text.split(/\n/);
+            let ul_jq=$('#batch-result ul');
+            ul_jq.empty();
+            for (let i=0;i<domains.length;++i){
+                let domain_line=domains[i];
+                let line_vals=domain_line.split('|');
+                let domain=line_vals[0];
+                if (!isValidDomain(domain) || line_vals.length!==3){
+                    continue;
+                }
+                console.log("adding "+domain);
+                let result_li=$('<li class="list-group-item"></li>');
+                result_li.html('<code>'+domain+'</code>&nbsp;<span>添加中</span>');
+                ul_jq.append(result_li);
+                try{
+                    let form=new FormData();
+                    form.append('name',domain);
+                    if (line_vals[1]!==""){form.append('description',line_vals[1]);}
+                    if (line_vals[2]!==""){form.append('assign_mibiao',line_vals[2]);}
+                    let whoisResp=await getWhois(domain);
+                    if (whoisResp){
+                        if (whoisResp.register_time) form.append('regtime',whoisResp.register_time);
+                        if (whoisResp.expire_time) form.append('exptime',whoisResp.expire_time);
+                        if (whoisResp.registrar) form.append('registrar',whoisResp.registrar);
+                    }
+                    let rawResp=await fetch('/domain/add',{method:'POST',credentials:'same-origin',body:form,headers:{'Accept':'application/json'}});
+                    if (rawResp.ok){
+                        result_li.find('span').text('添加成功');
+                    }else{
+                        let wrongResp=await rawResp.json();
+                        result_li.find('span').text('添加失败:'+wrongResp.error);
+                    }
+                }catch(e){
+                    result_li.find('span').text('添加失败');
+                    console.log(e);
+                }
+            }
+        }
+    </script>
+    <script>
+        function fillmibiao(){
+            let elem_jq=$('select[name="assign_mibiao"]');
+            fetch('/domain/mibiao',{headers:{'Accept':'application/json'},credentials:'same-origin'})
+                .then(res=>res.json())
+                .then(res=>{
+                    res.forEach((x)=>{
+                        elem_jq.append('<option value="'+x.id+'">'+x.id+' - '+x.assign_domain+'</option>');
+                        if (typeof after_load_trigger==='function'){
+                            after_load_trigger();
+                        }
+                    })
+                })
+        }
+        fillmibiao();
+        function filltype() {
+            let elem_jq=$('select[name="typeid"]');
+            fetch('/domain/domain_type',{headers:{'Accept':'application/json'},credentials:'same-origin'}).then(res=>res.json())
+                .then(res=>{
+                    res.forEach(x=>{
+                        elem_jq.append('<option value="'+x.id+'">'+x.text+'</option>');
+                        if (typeof after_load_trigger==='function') {
+                            after_load_trigger();
+                        }
+                    })
+                }).catch(err=>{
+                console.log(err);
+            })
+        }
+        filltype();
+    </script>
+    {% if method == "add" %}
+        <script>
+            document.getElementById("txt_domain").onblur=fillinfo;
+            function fillinfo(ev) {
+                let d=ev.target.value;
+                let loading=document.getElementById("ico-loading");
+                loading.hidden=false;
+                fetch("/whois/"+d,{headers:{'Accept':'application/json'},credentials:'same-origin'})
+                    .then((res)=>{
+                        if (res.ok){
+                            return res.json();
+                        }
+                        return new Error("failed");
+                    }).then((res)=>{
+                    console.log(res);
+                    loading.hidden=true;
+                    if (res.register_time)
+                        document.querySelector('input[name="regtime"]').value=res.register_time;
+                    if (res.expire_time)
+                        document.querySelector('input[name="exptime"]').value=res.expire_time;
+                    if (res.registrar)
+                        document.querySelector('input[name="registrar"]').value=res.registrar;
+                }).catch((error)=>{
+                    console.log(error);
+                    loading.hidden=true;
+                })
+            }
+        </script>{% endif %}{% if method == "modify" %}
+    <script>
+        document.getElementById("txt_domain").readOnly="readonly";
+        function after_load_trigger(){
+            {% if domain.assign_mibiao %}$('select[name="assign_mibiao"]').val({{ domain.assign_mibiao }});{% endif %}
+            {% if domain.typeid %}$('select[name="typeid"]').val({{ domain.typeid }});{% endif %}
+        }
+    </script>{% endif %}
+{% endblock %}

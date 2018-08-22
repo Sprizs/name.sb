@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta property="og:title" content="{{ mb.title }} - 烧饼米表 Alpha"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:description" content="{% if mb.description %}{{ mb.description }}{% else %}烧饼米表给您带来最好的米表体验{% endif %}"/>
+    <meta property="og:locale" content="zh-hans"/>
+    <link rel="stylesheet" href="{{ url_for('static',filename="bootstrap.min.css",_external=True) }}">
+    <link href="https://cdnjs.loli.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.loli.net/css?family=Saira+Semi+Condensed" rel="stylesheet">
+<style type="text/css">
+body {
+    font-family: 'Saira Semi Condensed', sans-serif;
+    background-color: rgb(6,6,6);
+    color: rgb(136,136,136);
+}
+table a:not(.btn),.table a:not(.btn) {
+    color: #FF0066;
+    text-decoration: none;
+}
+table a:hover,.table a:hover {
+    color: #FFFFFF;
+    text-decoration: none;
+    background: #CC3366;
+}
+div.card {
+    background-color: rgb(34,34,34);
+    border-bottom-color: rgb(40,40,40);
+}
+    div.card-header{
+        background-color: rgb(60,60,60);
+        border-bottom-color: rgb(60,60,60);
+    }
+    table.table{
+        background-color: rgb(24,24,24);
+        color:rgb(255,255,255);
+    }
+    .table tr th{
+        border-bottom-color: rgb(40,40,40);
+    }
+    .navbar .navbar-brand{
+        color: white;
+    }
+    .navbar{
+        border-bottom: 1px solid #282828;
+    }
+    .navbar li a{
+        color:rgb(136,136,136)
+    }
+    #contact-header{
+        color: white;
+        margin-top:60px;
+        border-bottom: 1px solid #282828;
+    }
+    #contact i {
+        margin-right:0.5em;
+    }
+    #contact span{
+        margin-right: 1.5em;
+    }
+</style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="container">
+    <a class="navbar-brand" href="/"></a>
+    <ul class="navbar-nav mr-auto">
+        <li class="navbar-item">
+            <a class="nav-link" href="/contact">联系我们</a>
+        </li>
+    </ul>
+    </div>
+</nav>
+<div id="main-container" class="container">
+</div>
+<footer class="footer">
+    <div class="container">
+        <p class="text-muted">Copyright &#9400; 2018 <a href="https://owl.net/" title="Owl Limited">Owl Limited</a>. All rights reserved.</p>
+    </div>
+</footer>
+<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdn.bootcss.com/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.bootcss.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script>
+async function refresh(){
+    let res=await fetch('{{ url_for('domain.mibiao',_external=True) }}/'+window.location.hostname,{headers:{'Accept':'application/json'}})
+            .then(res=>res.json());
+    $('a.navbar-brand').text(res.title);
+    $('title').text(res.title);
+    //生成各类div
+    let main_container=$('div#main-container');
+    main_container.empty();
+    main_container.append('<div><h1></h1><p id="description"></p></div>');
+    if (res.domain_types){
+        for (let i=0;i<res.domain_types.length;i++){
+            d_type=res.domain_types[i];
+            let section=$('<div id="type-'+d_type.id+'" class="card my-4 domains"></div>');
+            section.append('<div class="card-header">'+d_type.text+'</div>');
+            section.append('<div class="card-body"><table class="table table-hover"><thead><tr><th>域名</th><th></th><th>描述</th></tr></thead><tbody></tbody></table></div>');
+            main_container.append(section);
+        }
+    }
+    main_container.append('<div id="non-classified" class="card my-4 domains"><div class="card-header">未分类域名</div><div class="card-body"><table class="table table-hover"><thead><tr><th>域名</th><th></th><th>描述</th></tr></thead><tbody></tbody></table></div></div>');
+    main_container.append('<div id="contact-header"><h1>联系我们</h1></div>');
+    main_container.append('<div class="card my-2" id="contact"><div class="card-header">销售代表</div><div class="card-body"></div></div>');
+    //
+    $("#description").text(res.description);
+    // 填入联系人信息
+    let contact_text="";
+    if (res.contact.name) contact_text+='<span><i class="fa fa-address-book" aria-hidden="true"></i>'+res.contact.name+'</span>';
+    if (res.contact.email) contact_text+='<span><i class="fa fa-envelope" aria-hidden="true"></i><a href="mailto:'+res.contact.email+'">'+res.contact.email+'</a></span>';
+    if (res.contact.phone) contact_text+='<span><i class="fa fa-phone" aria-hidden="true"></i><a href="tel:'+res.contact.phone+'">'+res.contact.phone+'</a></span>';
+    if (res.contact.wechat) contact_text+='<span><i class="fa fa-wechat" aria-hidden="true"></i>'+res.contact.wechat+'</span>';
+    if (res.contact.qq) contact_text+='<span><i class="fa fa-qq" aria-hidden="true"></i>'+res.contact.qq+'</span>';
+    if (res.contact.additional) contact_text+='<span><i class="fa fa-sticky-note" aria-hidden="true"></i>'+res.contact.additional+'</span>';
+    $('#contact .card-body').html(contact_text);
+    // 填入域名
+    let no_type_domain=true;
+    let display_no_class=false;
+    for (let i=0;i<res.sub_domains.length;++i){
+        let domain=res.sub_domains[i];
+        let domain_dom=$('<tr><th>'+domain.domain+'</th><th><a href="//'+domain.domain+'">点我报价</a></th><th>'+domain.description+'</th></tr>');
+        if (domain.typeid){
+            $('div#type-'+domain.typeid+' tbody').append(domain_dom);
+        }else{
+            $('div#non-classified tbody').append(domain_dom);
+            display_no_class=true;
+        }
+    }
+    if (!display_no_class) {console.log('hide non-classified');$('div#non-classified').hide();}
+}
+if (window.location.pathname==="/"){
+    showIndex();
+}else if (window.location.pathname==="/contact"){
+    showContact();
+}else {
+    showIndex();
+}
+
+async function showIndex() {
+    await refresh();
+    $("div#contact").hide();
+    $("div#contact-header").hide();
+}
+async function showContact() {
+    await refresh();
+    $("div.domains").hide();
+}
+</script>
+</body>
+</html>

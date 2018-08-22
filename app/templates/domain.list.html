@@ -1,0 +1,325 @@
+{% extends "admin_base.html" %}
+{% block title %} 域名列表 {% endblock %}
+{% block content %}
+<div class="m-2">
+<a href="./add" class="btn btn-success">添加域名</a>
+<a href="./add_batch" class="btn btn-success">批量添加域名</a>
+{% if domains|length > 0  %}<button class="btn btn-primary mx-2" data-toggle="modal" data-target="#mdl-validateNS">验证NS</button>{% endif %}
+<button class="btn btn-primary mx-2" data-toggle="modal" data-target="#mdl-domaintype">管理自定义域名类型</button>
+</div>
+{% if domains|length == 0  %}
+    <p>没有任何域名</p>
+{% else %}
+<p>注:第一次开启HTTPS/证书过期时需要申请Let's Encrypt证书，耗时较久，请勿刷新页面</p>
+<p>为确保交易安全性，NS未验证的域名访问时不会出现报价页面，验证NS之后即可恢复</p>
+<table id="domain-table"></table>
+{% endif %}
+<div class="modal fade" id="mdl-validateNS" tabindex="-1" role="dialog" aria-labelledby="validate-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="validate-label">验证NS</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="alert alert-primary">请将 NS 改为如下地址<br/>
+                            <!-- TODO:NS地址改为外部config控制 -->
+                            <code>ns1.name.sb</code><br/>
+                            <code>ns2.name.sb</code>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <ul id="validateNS-domain-list" class="list-group">
+                        </ul>
+                    </div>
+                </div>
+                <button id="btn-verifyNS" class="btn btn-primary" onclick="verifyNS()">开始检测 NS</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="mdl-domaintype" tabindex="-1" role="dialog" aria-labelledby="domaintype-label" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="domaintype-label">自定义类型管理</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <label>类型名</label>
+                    <input class="form-control" id="new-type-name" />
+                    <button class="btn btn-success mt-2" onclick="addModalDomainType()">新建类型</button>
+                    <hr/>
+                </div>
+                <div>
+                    <ul class="list-group">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+"use strict";
+$("#mdl-validateNS").on('show.bs.modal',()=>{
+    let jqlist=$("#validateNS-domain-list");
+    jqlist.empty();
+    fetch('/domain/list',{credentials:'same-origin',headers:{'Accept':'application/json'}})
+        .then((res)=>{
+            return res.json();
+        }).catch((err)=>{
+            $("#validateNS-domain-list").append('<span class="alert alert-danger">服务器错误</span>');
+            console.log(res);
+    }).then((res)=>{
+        if (res.length===0){
+            jqlist.append('<div class="alert alert-success">您所有域名均已通过验证</div>');
+            $("button#btn-verifyNS").prop('disabled',true);
+        }else{
+            res.forEach((curr)=>{
+                if (!curr.validated){
+                    $("#validateNS-domain-list").append('<li class="list-group-item"><span class="domain-name">'+curr.name+'</span><span class="vali-result float-right">未验证<span></li>')
+                }
+            })
+        }
+    })
+});//<i class="fa fa-spinner fa-spin" style="font-size:24px"></i> spinning
+$("#mdl-validateNS").on('hidden.bs.modal',()=>{
+    refreshDomain();
+});
+$('#mdl-domaintype').on('show.bs.modal',()=>{
+    refreshModalDomainType();
+});
+function verifyNS() {
+    $("#validateNS-domain-list li").each((idx,elem)=>{
+        let jqelem=$(elem);
+        jqelem.find("span.vali-result").html('<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>');
+        let domain=jqelem.find("span.domain-name").text();
+        let form=new FormData();
+        form.append('domain',domain);
+        fetch('/domain/validateNS',{credentials:'same-origin',method:'POST',body:form,headers:{'Accept':'application/json'}})
+            .then(res=>{
+                if (res.ok) {
+                    jqelem.find("span.vali-result").html('<i class="fa fa-check"></i>已验证');
+                }else{
+                    let resp_text;
+                    switch (res.status){
+                        case 404:resp_text='域名错误';break;
+                        case 409:resp_text='NS地址有误';break;
+                        case 408:resp_text='NS查询失败';break;
+                        case 504:resp_text='查询超时';break;
+                        default:resp_text='未知错误';
+                    }
+                    jqelem.find("span.vali-result").html('<i class="fa fa-times"></i>验证失败 '+resp_text);
+                }
+            }).catch(err=>{
+                console.log(err);
+            });
+    })
+}
+let g_dtypes=null;
+let g_mb_domains=null;
+async function initPage() {
+    await fetch('/domain/domain_type',{credentials:'same-origin', headers:{'Accept':'application/json'}}).then(res=>res.json()).then(res=>{g_dtypes=[];for (let i=0;i<res.length;++i) {g_dtypes[res[i].id] = res[i].text;}}).catch(err=>console.log(err));
+    await fetch('/domain/mibiao',{credentials:'same-origin', headers:{'Accept':'application/json'}})
+        .then((res)=>{
+            if (res.ok) return res.json();
+            throw new Error('http failed');
+        }).then(res=>{
+            g_mb_domains=[];
+            for (let i=0;i<res.length;++i){
+                g_mb_domains.push(res[i].assign_domain);
+            }
+        }).catch(err=>{console.log(err);});
+    refreshDomain();
+}
+initPage();
+function deleteDomain(domain,requireConfirm){
+    if (requireConfirm){
+        if (!confirm('确认删除？这也会删除对应的米表')){
+            return;
+        }
+    }
+    let form=new FormData();
+    form.append('domain',domain);
+    fetch('./modify',{
+        method:'DELETE',
+        credentials:'same-origin',
+        body:form
+    }).then((resp)=>{
+        if (resp.ok){
+            alert('域名已删除');
+            location.reload();
+        }else{
+            resp.json().then((res)=>{alert('域名删除失败:'+res.error);}).catch((err)=>{alert('域名删除失败:服务器错误')});
+        }
+    }).catch((error)=>{
+        alert('域名删除失败:连接错误');
+        console.log(error);
+    });
+}
+function DomainOperationFormatter(_,row) {
+    return ['<a class="btn btn-warning" href="./modify?domain='+row.name+'">修改</a>',
+            '<button class="btn btn-danger" onclick="deleteDomain(\''+row.name+'\''+(typeof g_mb_domains !== 'undefined' && g_mb_domains instanceof Array && g_mb_domains.indexOf(row.name)!==-1?',true':'')+')">删除</button>'
+    ].join('');
+}
+function HttpsSwitchFormatter(val,row) {
+    if (typeof g_mb_domains !== 'undefined' && g_mb_domains instanceof Array && g_mb_domains.indexOf(row.name)===-1){
+        return '<span class="text-danger">不可用</span>';
+    }
+    else if (!row.validated){
+        return '<span class="text-danger">请验证</span>';
+    }
+    return ['<div class="custom-switch">',
+            '<input id="chk-https-'+row.name+'" data-domain="'+row.name+'" type="checkbox" name="https" class="custom-switch-input" title="https status" '+(row.https_switch?'checked':'')+' />',
+            '<label class="custom-switch-btn" for="chk-https-'+row.name+'"></label>',
+            '</div><div class="result"></div>'
+    ].join('');
+}
+function DomainVisitStats(_,row) {
+    return '<span class="visit-stats" data-domain="'+row.name+'">N/A</span>';
+}
+function refreshDomain() {
+    fetch('/domain/list',{credentials:'same-origin',headers:{'Accept':'application/json'}})
+        .then(res=>res.json())
+        .then(res=>{
+            $("#domain-table").bootstrapTable({
+                columns:[
+                    {field:'name',title:"域名",formatter:(val)=>{return '<code>'+val+'</code>'}},
+                    {field:'exptime',title:"过期时间",formatter:val=>{return '<code>'+val+'</code>'}},
+                    {field:'registrar',title:'注册商'},
+                    {field:'assign_mibiao',title:'关联米表',formatter:(val)=>{return (!val?'N/A':val)}},
+                    {field:'typeid',title:'域名类型',formatter:typeFormatter},
+                    {field:'https-switch',title:'HTTPS',formatter:HttpsSwitchFormatter},
+                    {field:'validated',title:'NS验证状态',formatter:(val)=>{return (val?'已验证':'等待验证');}},
+                    {field:'visit-stats',title:'<button id="btn-toggleVisit" class="btn btn-primary" onclick="toggleVisit()" data-option="daily">今日访问量</button>',formatter:DomainVisitStats},
+                    {field:'operation',title:'',formatter:DomainOperationFormatter}
+                ],
+                data:res,
+                onPostBody:refreshStats
+            });
+            document.querySelectorAll('input[name="https"]').forEach(val=>val.onchange=https_request);
+        });
+}
+function refreshStats(option){
+    $('span.visit-stats').each((_,elem)=>{
+        $(elem).text('N/A');
+        let params={domain:$(elem).data('domain')};
+        if (option==="all"){
+            params['ignore_date']=1;
+        }
+        fetch('/domain/stats?'+$.param(params),{credentials:'same-origin', headers:{'Accept':'application/json'},})
+            .then(res=>res.json()).then(res=>{$(elem).text(res);}).catch(err=>{$(elem).text("错误");});
+    })
+}
+function toggleVisit() {
+    let btn=$("#btn-toggleVisit");
+    let opt=btn.data('option');
+    if (opt==="daily") {
+        opt = "all";
+    }else if (opt==="all"){
+        opt= "daily";
+    }
+    btn.data('option',opt);
+    btn.text((opt==="daily"?"今日访问量":"历史访问量"));
+    refreshStats(opt);
+}
+function typeFormatter(val) {
+    if (!g_dtypes){
+        return val;
+    }else{
+        return g_dtypes[val];
+    }
+}
+function addModalDomainType() {
+    let form=new FormData();
+    let new_type_name=$('#new-type-name').val();
+    if (new_type_name.length===0){
+        alert('请输入名称');
+        return;
+    }
+    form.append('text',new_type_name);
+    fetch('/domain/domain_type?action=add',{method:'POST',credentials:'same-origin', headers:{'Accept':'application/json'},body:form})
+        .then(res=>{
+            if (res.ok){
+                alert('添加成功');
+                refreshModalDomainType();
+            }else{
+                if (res.status===402){
+                    alert('自定义类型不能超过5个')
+                }else if (res.status===409){
+                    alert('存在同名类型');
+                }else{
+                    console.log(res.text());
+                    alert('未知错误');
+                }
+            }
+        })
+        .catch(err=>{
+            console.log(err);
+            alert('添加失败');
+        });
+}
+function refreshModalDomainType() {
+    fetch('/domain/domain_type?owned=1',{credentials:'same-origin', headers:{'Accept':'application/json'}}).then(res=>res.json())
+        .then(res=>{
+            $('#mdl-domaintype div.modal-body ul').empty();
+            for (let i=0;i<res.length;++i){
+                $('#mdl-domaintype div.modal-body ul')
+                    .append('<li class="list-group-item form-inline" data-typeid="'+res[i].id+'"><input class="form-control" value="'+res[i].text+'"/><button class="btn btn-warning mx-2" onclick="modifyDomainType(this)">修改</button><button class="btn btn-danger" onclick="deleteDomainType(this)">删除</button></li>');
+            }
+        })
+}
+function modifyDomainType(btn_dom) {
+    let btn_jq=$(btn_dom);
+    let typeid=btn_jq.parents('li').data('typeid');
+    let form=new FormData();
+    let new_type_name=btn_jq.parents('li').find('input').val();
+    if (new_type_name.length===0){
+        alert('请输入名称');
+        return;
+    }
+    form.append('id',typeid);
+    form.append('text',new_type_name);
+    fetch('/domain/domain_type?action=edit',{method:'POST',credentials:'same-origin', headers:{'Accept':'application/json'},body:form})
+        .then(res=>{
+            if (res.ok){
+                alert('类型已修改');
+                refreshModalDomainType();
+            }else{
+                alert('修改失败');
+            }
+        }).catch(err=>{
+        console.log(err);
+        alert('修改失败');
+    })
+}
+function deleteDomainType(btn_dom){
+    let btn_jq=$(btn_dom);
+    let typeid=btn_jq.parents('li').data('typeid');
+    console.log(typeid);
+    let form=new FormData();
+    form.append('id',typeid);
+    fetch('/domain/domain_type?action=delete',{method:'POST',credentials:'same-origin', headers:{'Accept':'application/json'},body:form})
+        .then(res=>{
+            if (res.ok){
+                alert('类型已删除');
+                refreshModalDomainType();
+            }else{
+                alert('删除失败');
+            }
+        }).catch(err=>{
+            console.log(err);
+            alert('删除失败');
+    })
+}
+</script>
+{% endblock %}

@@ -1,0 +1,196 @@
+{% extends "admin_base.html" %}
+{% block addtional_head %}
+<style>
+    #notifications-list li i{
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="card my-2">
+<div class="card-header"><h2>更改密码</h2></div>
+<div class="card-body">
+<form class="form-control no-border">
+    <div class="form-group" id="grp-oldpass">
+    <label for="txt-oldpass">原密码</label><input class="form-control" id="txt-oldpass" type="password" name="old-password" />
+    <div class="invalid-feedback">原密码错误</div>
+    </div>
+    <div class="form-group" id="grp-newpass">
+    <label for="txt-newpass">新密码</label><input class="form-control" id="txt-newpass" type="password" name="new-password" />
+    <label for="txt-confpass">重复</label><input class="form-control" id="txt-confpass" type="password" name="confirm-password" />
+    <div class="invalid-feedback">重复密码不对</div>
+    </div>
+    <div style="padding-top: 1em">
+        <input type="button" class="btn btn-warning" onclick="changepw()" value="更改密码"/>
+        <i id="ico-loading-changepw" class="fa fa-spinner fa-spin" style="font-size: 24px" hidden></i>
+        <span id="changepw-hint"></span>
+    </div>
+</form>
+</div>
+</div>
+<div class="card my-2">
+<div class="card-header"><h2>通知</h2></div>
+<div class="card-body">
+    <form class="form-control form-inline">
+        <label>通知方式</label><select class="form-control mx-2" name="notification_type"></select>
+        <label>地址</label><input class="form-control mx-2" name="notification_address" />
+        <button class="btn btn-success" id="btn-add-nt">添加</button>
+        <span id="notification_add_result" class="ml-3"></span>
+    </form>
+    <ul class="list-group my-3" id="notifications-list">
+    </ul>
+</div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+function changepw() {
+    let old_pass=document.getElementById("txt-oldpass").value;
+    let new_pass=document.getElementById("txt-newpass").value;
+    let hint=document.getElementById("changepw-hint");
+    let loading=document.getElementById('ico-loading-changepw');
+    hint.classList.remove('text-danger');
+    hint.classList.remove('text-success');
+    hint.innerText="";
+    document.getElementById("txt-oldpass").classList.remove('is-invalid');
+    document.getElementById("txt-newpass").classList.remove("is-invalid");
+    document.getElementById("txt-confpass").classList.remove("is-invalid");
+    if (document.getElementById("txt-confpass").value!==new_pass) {
+        document.getElementById("txt-newpass").classList.add("is-invalid");
+        document.getElementById("txt-confpass").classList.add("is-invalid");
+        return;
+    }
+    loading.hidden=false;
+    fetch("/user/changepw",{
+        method:'POST',
+        credentials:'same-origin',
+        body:JSON.stringify({'old-password':old_pass,'new-password':new_pass}),
+        headers:new Headers({
+            'Content-Type':'application/json'
+        })
+    }).then((res)=>{
+        console.log(res.status);
+        switch (res.status){
+            case 204:
+                hint.classList.add('text-success');
+                hint.innerText="更改成功";
+                break;
+            case 401:
+                document.getElementById("txt-oldpass").classList.add('is-invalid');
+                break;
+            default:
+                throw new Error("unknown error");
+        }
+    }).catch((err)=>{
+        console.log(err);
+        hint.classList.add('text-danger');
+        hint.innerText="未知错误";
+    }).finally(()=>{loading.hidden=true;})
+}
+function loadNotifications(){
+    let list_jq=$('#notifications-list');
+    list_jq.empty();
+    fetch('/user/notification',{credentials:'same-origin',headers:{'Accept':'application/json'}}).then(res=>res.json())
+        .then(res=>{
+            if (!res || res.length===0){
+                list_jq.text("没有设置通知方式");
+            }else{
+                for (let i=0;i<res.length;++i){
+                    let nt=res[i];
+                    let nt_html='<li class="list-group-item" data-id="'+nt.id+'">'+get_type_icon(nt.type)+'&nbsp;'+nt.address;
+                    if (nt.verified){
+                        nt_html+='<span class="badge badge-success mx-1">已验证</span>'
+                    }else{
+                        nt_html+='<span class="badge badge-danger mx-1">需验证</span>'
+                    }
+                    nt_html+='<span class="float-right"><i class="fa fa-trash" aria-hidden="true" onclick="deleteNotification(this)"></i></span></li>';
+                    list_jq.append(nt_html);
+                }
+            }
+        }).catch(err=>{
+        console.log(err);
+    });
+}
+function get_type_icon(ntype){
+    switch (ntype){
+        case 1:
+            return '<i class="fa fa-envelope" aria-hidden="true"></i>';
+        default:
+            return '<i class="fa fa-bell"></i>';
+    }
+}
+loadNotifications();
+function loadNotificationTypes() {
+    fetch('/user/notification?a=1',{method:'GET',credentials:'same-origin',headers:{'Accept':'application/json'}}).then(res=>res.json())
+        .then(res=>{
+            let select_jq=$('select[name="notification_type"]');
+            for (let k in res){
+                if (res.hasOwnProperty(k)){
+                    select_jq.append('<option value="'+res[k]+'">'+k+'</option>')
+                }
+            }
+        }).catch(err=>{
+            console.log(err);
+            alert('通知类型加载失败');
+    })
+}
+loadNotificationTypes();
+$('#btn-add-nt').on('click',(ev)=>{
+    ev.preventDefault();
+    addNotification();
+});
+function addNotification() {
+    let form=new FormData();
+    let result=$('span#notification_add_result');
+    form.append('type',$('select[name="notification_type"]').val());
+    let new_addr=$('input[name="notification_address"]').val();
+    if (new_addr===""){
+        result.html('<span class="text-danger">请输入地址</span>');
+        return;
+    }
+    form.append('address',new_addr);
+    fetch('/user/notification?action=add',{method:'POST',credentials:'same-origin',headers:{'Accept':'application/json'},body:form})
+        .then(res=>{
+            if (res.ok){
+                result.html('<span class="text-success">添加成功</span>');
+                loadNotifications();
+            }else{
+                if (res.status===409){
+                    result.html('<span class="text-danger">添加失败 地址重复 有疑问请联系我们</span>');
+                }else{
+                    return res.json().then((res2)=>{
+                        result.html('<span class="text-danger">添加失败 '+(res2.message?res2.message:'服务器错误')+'</span>');
+                    }).catch(err=>{
+                        throw new Error('unknown error');
+                    });
+                }
+            }
+        })
+        .catch(err=>{
+            console.log(err);
+            result.html('<span class="text-danger">添加失败，未知错误</span>');
+        })
+}
+function deleteNotification(target){
+    let li_jq=$(target).parents('li');
+    let ntid=li_jq.data('id');
+    let result=$('span#notification_add_result');
+    fetch('/user/notification?action=delete',{method:'POST',credentials:'same-origin',headers:{'Accept':'application/json','Content-Type':'application/x-www-form-urlencoded'},body:'id='+ntid})
+        .then(res=>{
+            if (res.ok){
+                result.html('<span class="text-success">删除成功</span>');
+                loadNotifications();
+            }else{
+                return res.json().then((res)=>{
+                    result.html('<span class="text-danger">删除失败 '+(res.message?res.message:'服务器错误')+'</span>');
+                }).catch(err=>{
+                    throw new Error('unknown error');
+                })
+            }
+        }).catch(err=>{
+            console.log(err);
+            result.html('<span class="text-danger">删除失败，未知错误</span>');
+    });
+}
+</script>
+{% endblock %}

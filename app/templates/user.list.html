@@ -1,0 +1,10 @@
+{% extends "admin_base.html" %}
+{% block title %}用户管理{% endblock %}
+{% block content %}
+    {% if users %}
+    {% for x in users %}
+        <p>{{ x.id }} / {{ x.username }}</p>
+    {% endfor %}
+    {% else %}
+    {% endif %}
+{% endblock %}

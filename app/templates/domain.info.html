@@ -1,0 +1,113 @@
+{% extends "admin_base.html" %}
+{% block content %}
+    <h2>添加域名</h2>
+<form method="post">
+    <label>域名 <i id="ico-loading" class="fa fa-spinner fa-spin" style="font-size: 24px" hidden></i></label><input type="text" class="form-control" id="txt_domain" {% if method == "modify" %} value="{{ domain.name }}" {% endif %} name="name"/>
+    <div class="row">
+    <div class="col-6">
+    <label>注册时间</label><input type="date" class="form-control" {% if method == "modify" and domain.regtime %} value="{{ domain.regtime.date() }}" {% endif %}name="regtime" />
+    </div>
+    <div class="col-6">
+    <label>过期时间</label><input type="date" class="form-control" {% if method == "modify" and domain.exptime %} value="{{ domain.exptime.date() }}" {% endif %} name="exptime"/>
+    </div>
+    </div>
+    <div class="row">
+    <div class="col-6">
+    <label>注册商</label><input type="text" class="form-control" {% if method == "modify" and domain.registrar %} value="{{ domain.registrar }}" {% endif %} name="registrar"/>
+    </div>
+    <div class="col-6">
+    <label>域名描述</label><input type="text" class="form-control" {% if method== "modify" and domain.description %} value="{{ domain.description }}" {% endif %} name="description"/>
+    </div>
+    </div>
+    <div class="row">
+        <div class="col-6">
+    <label>下属米表</label>
+    <select class="form-control" name="assign_mibiao">{% if method == "add" %}<option value="-1">新建米表</option>{% endif %}</select>
+        </div>
+        <div class="col-6">
+            <label>域名类型</label>
+            <select class="form-control" name="typeid"><option value="0">无类型</option></select>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary my-1" value="Submit">提交</button>
+
+</form>{% endblock %}
+{% block script %}
+<script>
+async function fillmibiao(){
+    let elem_jq=$('select[name="assign_mibiao"]');
+    let rawResp=await fetch('/domain/mibiao',{headers:{'Accept':'application/json'},credentials:'same-origin'});
+    if (rawResp.ok){
+        let Resp=await rawResp.json();
+        for (let i=0;i<Resp.length;++i){
+            let x=Resp[i];
+            elem_jq.append('<option value="'+x.id+'">'+x.id+' - '+x.assign_domain+'</option>');
+        }
+    } else {
+        console.log(rawResp.text());
+        throw new Error("/domain/mibiao error");
+    }
+}
+async function filltype() {
+    let elem_jq=$('select[name="typeid"]');
+    let rawResp=await fetch('/domain/domain_type',{headers:{'Accept':'application/json'},credentials:'same-origin'});
+    if (rawResp.ok){
+        let Resp=await rawResp.json();
+        for (let i=0;i<Resp.length;++i){
+            let x=Resp[i];
+            elem_jq.append('<option value="'+x.id+'">'+x.text+'</option>');
+        }
+    } else {
+        throw new Error("/domain/domain_type error");
+    }
+}
+async function f() {
+    try{
+        await filltype();
+        await fillmibiao();
+        let secondVal=$('select[name="assign_mibiao"] option:eq(1)').val();
+        if (secondVal!==undefined){
+            $('select[name="assign_mibiao"]').val(secondVal);
+        }
+        {% if method=="modify" %}
+            {% if domain.assign_mibiao %}$('select[name="assign_mibiao"]').val({{ domain.assign_mibiao }});{% endif %}
+            {% if domain.typeid %}$('select[name="typeid"]').val({{ domain.typeid }});{% endif %}
+        {% endif %}
+    }catch(e){
+        alert('域名类型/米表列表载入失败，请刷新重试');
+    }
+}
+f();
+</script>
+{% if method == "add" %}
+<script>
+document.getElementById("txt_domain").onblur=fillinfo;
+function fillinfo(ev) {
+    let d=ev.target.value;
+    let loading=document.getElementById("ico-loading");
+    loading.hidden=false;
+    document.querySelector('input[name="regtime"]').value="";
+    document.querySelector('input[name="exptime"]').value="";
+    document.querySelector('input[name="registrar"]').value="";
+    fetch("/whois/"+d,{headers:{'Accept':'application/json'},credentials:'same-origin'})
+        .then((res)=>{
+            if (res.ok){
+                return res.json();
+            }
+            return new Error("failed");
+        }).then((res)=>{
+            console.log(res);
+            loading.hidden=true;
+            document.querySelector('input[name="regtime"]').value=(res.register_time?res.register_time:'');
+            document.querySelector('input[name="exptime"]').value=(res.expire_time?res.expire_time:'');
+            document.querySelector('input[name="registrar"]').value=(res.registrar?res.registrar:'');
+        }).catch((error)=>{
+            console.log(error);
+            loading.hidden=true;
+    })
+}
+</script>{% endif %}{% if method == "modify" %}
+<script>
+document.getElementById("txt_domain").readOnly="readonly";
+</script>{% endif %}
+{% endblock %}

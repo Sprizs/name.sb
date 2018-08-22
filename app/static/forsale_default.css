@@ -1,0 +1,40 @@
+/**
+ * doma.in v1.0
+ * Designed by 21Beats
+ * http://21beats.com
+ */
+
+body, .well:before { background: url('https://i.loli.net/2018/06/14/5b21f1ddb2973.jpg') center / cover no-repeat fixed; }
+body { color: #fff; text-shadow: 1px 1px 1px rgba(0,0,0,.3); font-family: 'Open Sans', 'Microsoft JhengHei', Helvetica, Arial, sans-serif; }
+h1, h2, h3, p { margin-top: 0; margin-bottom: 0; }
+h1, h2, h3 { font-family: inherit; }
+hr { display: none; }
+
+.lcontact-heading .initial-form { margin-top: 30px; }
+.initial-form h1, .initial-form h2 { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.lcontact-heading .initial-form h1 { display: inline-block; border: 10px solid #fff; box-shadow: 0 1px 2px rgba(0,0,0,.1); border-radius: 20px; color: #fff; font-size: 70px; font-weight: 700; line-height: .8; padding: 10px 20px; }
+.subtitle { font-size: 20px; font-weight: 700; margin-top: 8px; }
+
+.lcontact-content .initial-form h2 { float: none; font-size: 20px; font-family: inherit; margin-bottom: 25px; }
+.well { position: relative; background: rgba(255,255,255,.2); border: 0; box-shadow: inset 0 0 1px #fff, 0 1px 3px rgba(0,0,0,.3); padding: 40px 30px 45px; overflow: hidden; }
+.well:before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; right: 0; z-index: -10; margin: -10px; filter: blur(10px); }
+.form-group { margin-bottom: 0; }
+.fz-md { display: block; font-size: 18px; font-weight: 400; margin-bottom: 18px; }
+.form-control { border: 0; box-shadow: none; color: #333; font-size: 18px; text-shadow: none; height: 42px; }
+.btn-block { border: 0; font-size: 18px; line-height: 1.4; }
+.form-control:focus { box-shadow: none; }
+.alert-warning { display: none; }
+
+.copyright { margin-bottom: 20px; }
+.btn-link, .btn-link:hover { color: inherit; font-size: inherit; }
+
+@media ( min-width: 768px ) {
+    .lcontact-heading .initial-form { margin-bottom: 45px; }
+    .btn-block { margin-top: 15px; }
+    .copyright { margin-top: 40px; }
+}
+
+@media ( max-width: 767px ) {
+    .lcontact-heading .initial-form { margin-bottom: 30px; }
+    .copyright { margin-top: 20px; }
+}

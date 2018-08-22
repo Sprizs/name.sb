@@ -1,0 +1,39 @@
+POST http://localhost/login
+Content-Type: application/x-www-form-urlencoded
+
+username=test1&password=test1
+
+###
+GET http://localhost/domain/stats
+Accept: application/json, text/html
+Cookie: session=eyJ1c2VybmFtZSI6InRlc3QxIn0.DfEwAA.KXRleqMg5FAeX9pPnOrIRrbe9AU; HttpOnly; Path=/
+
+###
+GET http://localhost/domain/list
+Cookie: session=eyJ1c2VybmFtZSI6InRlc3QxIn0.DfEwAA.KXRleqMg5FAeX9pPnOrIRrbe9AU; HttpOnly; Path=/
+
+###
+POST http://localhost/domain/add
+Cookie: session=eyJ1c2VybmFtZSI6InRlc3QxIn0.DfEwAA.KXRleqMg5FAeX9pPnOrIRrbe9AU; HttpOnly; Path=/
+Content-Type: application/x-www-form-urlencoded
+
+domain=example3.net&expire_date=2020-01-01&register_date=1999-01-01&registrar=e3&template-name=example1
+###
+GET http://localhost/domain/add
+Cookie: session=eyJ1c2VybmFtZSI6InRlc3QxIn0.DfEwAA.KXRleqMg5FAeX9pPnOrIRrbe9AU; HttpOnly; Path=/
+
+###
+GET https://api.telegram.org/bot539668682:AAGNDJGUS5q2FZD5cWB3aNr0W_hGBmAqVqc/getUpdates
+
+###
+GET http://localhost/admin/dns_query?all=1&key=@wsxcvfr$
+
+###
+GET https://acme-staging-v02.api.letsencrypt.org/directory
+User-Agent: requests/0.1
+
+###
+GET https://index.do.bupt.moe/admin/dns_query?all=1
+X-Cat-Key: @wsxcvfr$
+
+###

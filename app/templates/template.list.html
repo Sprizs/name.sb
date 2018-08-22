@@ -1,0 +1,42 @@
+{% extends "admin_base.html" %}
+{% block title %}停放模板列表{% endblock %}
+{% block content %}
+<div class="m-2">
+    <a class="btn btn-success" href="./template?action=add">添加模板</a>
+</div>
+{% if tpls and tpls|count != 0 %}
+<ul class="list-group">
+    <li>默认模板<a class="btn btn"></a></li>
+{% for tpl in tpls%}
+    <li class="list-group-item">{{ tpl.display_name }}
+        <a class="btn btn-secondary" target="_blank" href="{{ url_for("domain.template_preview",tpl=tpl.display_name) }}">预览</a>
+        {% if tpl.uploader==session['username'] %}<button class="btn btn-danger" onclick="deleteTemplate('{{ tpl.display_name }}')">删除</button>{% endif %}
+    </li>
+{% endfor %}
+</ul>
+{% else %}
+<p>没有任何模板！</p>
+{% endif %}
+{% endblock %}
+{% block script %}
+    <script>
+    function deleteTemplate(name) {
+        let form=new FormData();
+        form.append('name',name);
+        fetch('./template',{
+            method:'DELETE',
+            credentials:'same-origin',
+            body:form
+        }).then((resp)=>{
+            if (resp.ok){
+                alert('template deleted');
+                return;
+            }
+            throw new Error('template delete failed')
+        }).catch((err)=>{
+            alert('deleted failed');
+            console.log(err);
+        })
+    }
+    </script>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "admin_base.html" %}
+{% block title %}联系方式列表{% endblock %}
+{% block content %}
+<a class="btn btn-success my-3" href="./contact?action=add">添加联系方式</a>
+{% if contacts|count == 0 %}
+<p>没有联系方式</p>
+{% else %}<ul class="list-group">
+{% for x in contacts %}
+<li class="list-group-item">{{ x.id }} - {{ x.name }}
+    <a class="btn btn-warning" href="./contact?id={{ x.id }}&action=edit">编辑 / 删除</a>
+</li>
+{% endfor %}
+</ul>{% endif %}
+{% endblock %}

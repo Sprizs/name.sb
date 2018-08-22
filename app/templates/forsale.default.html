@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+    <meta charset="UTF-8">
+    <meta property="og:title" content="{{ domain }} - 烧饼米表 Alpha"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:locale" content="zh-hans"/>
+    <meta property="og:description" content="{{ domain }} is on sale! By 烧饼米表"/>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="{{ url_for('static',filename="forsale_default.css",_external=True) }}"/>
+    <script src="https://cdnjs.loli.net/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="{{ url_for('static',filename="jquery.i18n.js",_external=True) }}"></script>
+    <script src="{{ url_for('static',filename="jquery.i18n.fallbacks.js",_external=True) }}"></script>
+    <script src="{{ url_for('static',filename="jquery.i18n.emitter.js",_external=True) }}"></script>
+    <script src="{{ url_for('static',filename="jquery.i18n.language.js",_external=True) }}"></script>
+    <script src="{{ url_for('static',filename="jquery.i18n.messagestore.js",_external=True) }}"></script>
+    <script src="{{ url_for('static',filename="jquery.i18n.parser.js",_external=True) }}"></script>
+    <style>
+        body{
+            font-family: '微软雅黑';
+        }
+        .modal-dialog{
+            position: relative;
+            display: table; /* This is important */
+            overflow-y: auto;
+            overflow-x: auto;
+            width: auto;
+            min-width: 300px;
+        }
+    </style>
+    <title>{{ domain }} - </title>
+    <style>h1{text-align: center;margin-bottom: 30px;margin-top:80px;}  p{text-align: center;font-size: 20px;margin-bottom: 30px}</style>
+</head>
+<!--
+模板自定义说明:
+本模板使用jinja2模板引擎
+变量列表
+  domain:str 域名
+  offer:bool 域名报价是否提交成功 请先用 defined 检查是否存在 （请自行在前端检查form表是否符合要求）
+-->
+<body>
+<h1 id="h1-domain">{{ domain }}</h1>
+<p id="2nd-title" data-i18n="mibiao-forsale-p2"></p>
+<div class="theme-statefarm-v2 theme-white theme-imagery">
+    <div class="container">
+        <div class="row">
+            <form id="domainquery" method="post" action="/{{ domain }}">
+                <input type="hidden" name="domain" value="{{ domain }}"/>
+                <fieldset>
+                    <div class="col-xs-12 col-sm-4"> <div class="well"><div class="form-group form-group-full_name">
+                        <label  class="control-label text-center fz-md" for="txt-name" id="lbl-name" data-i18n="mibiao-lbl-name"></label>
+                        <input  class="form-control"  type="text" id="txt-name" name="name" required/><br/>
+                    </div></div></div>
+                    <div class="col-xs-12 col-sm-4"> <div class="well"><div class="form-group form-group-full_name">
+                        <label class="control-label text-center fz-md" for="txt-email" id="lbl-email" data-i18n="mibiao-lbl-email"></label>
+                        <input class="form-control" type="email" id="txt-email" pattern="(.+)@(.+){1,}\.(.+){2,}" name="email" required/><br/>
+                    </div></div></div>
+                    <div class="col-xs-12 col-sm-4"> <div class="well"><div class="form-group form-group-full_name">
+                        <label class="control-label text-center fz-md" for="txt-message" id="lbl-offer" data-i18n="mibiao-lbl-offer"></label>
+                        <input class="form-control" type="text" id="txt-message" name="message" required/><br/>
+                    </div></div></div>
+                    <div class="modal fade" tabindex="-1" role="dialog" id="recaptcha">
+                        <div class="modal-dialog modal-sm" role="document">
+                            <div class="modal-content">
+                                <div class="modal-body">
+                                    <div class="g-recaptcha" data-sitekey="6Ldyq1wUAAAAAO7LbTSahLJXzKOvx6OTvzUsMKEK" data-callback="PostForm"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-12"><div class="row"><div class="col-xs-12 col-xs-offset-0 col-sm-4 col-sm-offset-4" id="sub-a">
+                        <button style="margin-bottom: 60px" class="btn btn-primary btn-lg btn-block" id="btn-submit">Submit</button></div></div></div>
+                    {% if offer is defined %}
+                        {% if offer %}
+                            <div class="col-xs-12"><div class="row"><div class="alert alert-success col-xs-12 col-xs-offset-0 col-sm-4 col-sm-offset-4 text-center"><span id="span-submit-success" data-i18n="mibiao-submit-success"></span></div></div></div>
+                            <script>setTimeout(()=>{location.replace(location.href)},5000)</script>
+                        {% else %}
+                            <div class="col-xs-12"><div class="row"><div class="alert alert-danger col-xs-12 col-xs-offset-0 col-sm-4 col-sm-offset-4 text-center"><span id="span-submit-failed" data-i18n="mibiao-submit-failed"></span></div></div></div>
+                        {% endif %}
+                    {% endif %}
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+async function i18n_apply(){
+    await $.i18n().load({'zh-hans':'{{ url_for("static",filename="i18n/zh-hans.json",_external=True) }}', 'en':'{{ url_for("static",filename="i18n/en.json",_external=True) }}'});
+    $.i18n({locale:navigator.language||navigator.userLanguage});
+    let domain_string=$('h1#h1-domain').text();
+    $('h1#h1-domain').text(domain_string+" "+$.i18n('mibiao-title-onsale'));
+    document.title+=$.i18n('mibiao-title-onsale');
+    $('#btn-submit').text($.i18n('mibiao-submit'));
+    $('body').i18n();
+}
+i18n_apply();
+$('#domainquery').on('submit',(ev)=>{
+    let form_jq=$(ev.currentTarget);
+    //let email_jq=form_jq.find('#txt-email');
+    $('#recaptcha').modal('show');
+    ev.preventDefault();
+});
+function PostForm() {
+    $('form#domainquery')[0].submit();
+}
+</script>
+<script src='https://www.recaptcha.net/recaptcha/api.js'></script>
+</body>
+</html>

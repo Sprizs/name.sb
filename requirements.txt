@@ -1,0 +1,11 @@
+flask==1.0.2
+flask_sqlalchemy
+flask-mysqldb
+dnslib
+python-whois
+requests
+cryptography
+pyopenssl
+mysql-connector-python
+idna
+python-dateutil

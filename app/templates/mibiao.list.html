@@ -1,0 +1,18 @@
+{% extends "admin_base.html" %}
+{% block title %}米表列表{% endblock %}
+{% block content %}
+    <a class="btn btn-success my-3" href="{{ url_for("domain.mibiao",action="add") }}">添加米表</a>
+{% if mbs|count ==0 %}
+    <p>没有米表</p>
+{% else %}
+    <ul class="list-group">
+{% for x in mbs %}
+    <li class="list-group-item">
+        <a href="{{ url_for("domain.mibiao",id=x.id) }}">{{ x.id|string + ' - ' +x.assign_domain }}</a>&nbsp;&nbsp;
+        <a href="{{ '//'+x.assign_domain }}" target="_blank"><i class="fa fa-link"></i>预览</a>
+    </li>
+{% endfor %}
+    </ul>
+{% endif %}
+    <p class="text-secondary my-3">定制需求请联系我们</p><p class="text-secondary">For custom styles, please contact us.</p>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "admin_base.html" %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="form-control" role="form">
+    <label for="txt-tpl-name">模板名</label><input class="form-control" type="text" id="txt-tpl-name" name="template-name" />
+    <label for="file-tpl">模板文件</label><input class="form-control" type="file" id="file-tpl" name="template-file"/>
+    <div class="my-3"></div>
+    <input class="btn btn-primary" type="submit" value="{% if method == "add" %}提交{% elif method=="modify" %}修改{% endif %}">
+</form>
+{% endblock %}

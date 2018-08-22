@@ -1,0 +1,17 @@
+{% extends "admin_base.html" %}
+{% block title %}联系方式修改{% endblock %}
+{% block content %}
+
+<form method='post' class="form-control no-border" id="contact">
+{% if contact is defined %}<input type="hidden" name="id" value="{{ contact.id }}"/>{% endif %}
+<label>姓名(*)</label><input type="text" class="form-control" name="name" value="{% if contact and contact.name %}{{ contact.name }}{% endif %}"/><br/>
+<label>邮箱</label><input type="email" class="form-control" name="email" value="{% if contact and contact.email %}{{ contact.email }}{% endif %}"/><br/>
+<label>电话</label><input type="tel" class="form-control" name="phone" value="{% if contact and contact.phone %}{{ contact.phone }}{% endif %}"/><br/>
+<label>微信</label><input type="text" class="form-control" name="wechat" value="{% if contact and contact.wechat %}{{ contact.wechat }}{% endif %}"/><br/>
+<label>QQ</label><input type="text" class="form-control" name="qq" value="{% if contact and contact.qq %}{{ contact.qq }}{% endif %}"/><br/>
+<label>附加信息</label><textarea title="附加信息" form="contact" class="form-control" name="additional">{% if contact and contact.additional %} {{ contact.additional }}{% endif %}</textarea>
+<div class="my-3"></div>
+<input type="submit" class="btn btn-primary" formaction="{{ url_for('user.contact',action="add") }}" value="提交"/>
+{% if contact is defined %}<input class="btn btn-danger" type="submit" formaction="{{ url_for('user.contact',action="delete") }}" value="删除"/>{% endif %}
+</form>
+{% endblock %}

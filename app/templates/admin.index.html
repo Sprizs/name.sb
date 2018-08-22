@@ -1,0 +1,323 @@
+{% extends "admin_base.html" %}
+{% block title %}用户管理{% endblock %}
+{% block addtional_head %}<link rel="stylesheet" href="{{ url_for("static",filename="bootstrap-tagsinput.css") }}" />{% endblock %}
+{% block content %}
+<div id="user-manage" class="mt-2">
+
+    <div class="form-inline mt-2">
+        <div class="form-row">
+        <label for="txt-username">用户名</label>
+        <div class="input-group">
+            <input class="form-control mx-1" id="txt-username"/>
+            <div class="invalid-tooltip">请填入用户名</div>
+        </div>
+        <button id="btn-search-user" class="btn btn-success" onclick="search_user(this)"><i class="fa fa-search"></i></button>
+        <button id="btn-show-all-user" class="btn btn-success ml-2" onclick="search_user(this)">显示所有用户</button>
+        </div>
+    </div>
+    <div id="user-result" class="mt-2">
+    </div>
+</div>
+<div class="modal fade" id="userinfoModal" tabindex="-1" role="dialog" aria-labelledby="modallabel" aria-hidden="true" data-backdrop="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="modallabel">用户管理</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-inline">
+                <label for="mdl-txt-username" class="mr-2">用户名</label><input id="mdl-txt-username" class="form-control" name="username"/>
+            </div>
+            <label>标签</label><input type="text" id="mdl-tag-list" data-role="tagsinput"/>
+        </div>
+        <div class="modal-footer">
+            <span class="alert result" style="width:50%"></span>
+            <button class="btn" data-dismiss="modal">关闭</button>
+            <button id="btn-modifyuser" class="btn btn-warning">提交修改</button>
+        </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="mdl-confirm" tabindex="-1" role="dialog" aria-labelledby="confirm-label" aria-hidden="true">
+<div class="modal-dialog" role="document">
+<div class="modal-content">
+    <div class="modal-header">
+        <h5 id="confirm-label">确认</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+    </div>
+    <div class="modal-footer">
+        <span class="alert result" style="width:50%"></span>
+        <button id="btn-confirm" class="btn"></button>
+        <button class="btn btn-secondary" data-dismiss="modal">取消</button>
+    </div>
+</div>
+</div>
+</div>
+<div class="modal fade" id="mdl-resetpassword" tabindex="-1" role="dialog" aria-labelledby="confirm-label" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="confirm-label">更改密码</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                正在更改 <code id="resetpassword-user"></code> 的密码
+                <input type="password" class="form-control" placeholder="新密码" name="new_password"/>
+            </div>
+            <div class="modal-footer">
+                <span class="alert result" style="width:50%"></span>
+                <button id="btn-confirm-resetpassword" class="btn btn-warning">更改密码</button>
+                <button class="btn btn-secondary" data-dismiss="modal">取消</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{{ url_for('static',filename="bootstrap-tagsinput.js") }}"></script>
+<script>
+"use strict";
+let confirm_url=null, confirm_init_obj=null;
+function status_tostring(x){
+    switch (x){
+        case 1:return '<span class="bg-success text-white">正常</span>';
+        case 2:return '<span class="bg-warning">暂时停用</span>';
+        case 3:return '<span class="bg-danger text-white">永久封禁</span>';
+    }
+}
+function tag_formatter(x){
+    if (!x){
+        return "";
+    }
+    let ret="";
+    for (let i=0;i<x.length;++i){
+        ret+='<span class="badge badge-pill badge-primary mx-1">'+x[i]+"</span>";
+    }
+    return ret;
+}
+function operateFormatter(_,row) {
+    function button1(row) {
+        if (row.status===1)
+            return '<button class="btn btn-primary mx-1 edit">查看/编辑</button>';
+        else
+            return '<button class="btn btn-primary mx-1" disabled>查看/编辑</button>'
+    }
+    function button2(row) {
+        if (row.status!==3)
+            return '<button class="btn btn-warning mx-1 reset-password">重置密码</button>';
+        else
+            return '<button class="btn btn-warning mx-1" disabled>重置密码</button>';
+    }
+    function button3(row) {
+        switch (row.status){
+            case 1:return '<button class="btn btn-warning mx-1 suspend">暂时停用</button>';
+            case 2:return '<button class="btn btn-success mx-1 restore">启用账户</button>';
+            case 3:return '<button class="btn btn-warning mx-1" disabled>暂时停用</button>';
+        }
+    }
+    function button4(row) {
+        if (row.status!==3)
+            return '<button class="btn btn-danger mx-1 delete">永久禁用</button>';
+        else
+            return '<button class="btn btn-danger mx-1" disabled>永久禁用</button>';
+    }
+    return [
+        button1(row),
+        button2(row),
+        button3(row),
+        button4(row)
+    ].join('')
+}
+$("#btn-modifyuser").on('click',(ev)=>{
+    let form=new FormData();
+    form.append('username',$("#userinfoModal input[name=\"username\"]").val());
+    let tags=$("#mdl-tag-list").tagsinput('items');
+    for (let i=0;i<tags.length;++i){
+        form.append('tags',tags[i]);
+    }
+    let result=$("#userinfoModal span.result").get(0);
+    fetch('/admin/modify_user',{
+        method:'POST',
+        credentials:'same-origin',
+        headers:{'Accept':'application/json'},
+        body:form
+    }).then((res)=>{
+        let res2=res.json();
+        if (res.ok){
+            result.innerText="更新成功";
+            result.classList.add("alert-success");
+            setTimeout(()=>{$("#userinfoModal").modal('hide')},500);
+        }else{
+            return res.json().then((res)=>{throw new Error(res.error);})
+        }
+    }).catch(err=>{
+        result.innerText="更新失败:"+err.message;
+        result.classList.add("alert-danger");
+    })
+});
+$("#btn-confirm-resetpassword").on('click',(ev)=>{
+    let form=new FormData();
+    let modal_jq=$(ev.target).parents("div.modal");
+    let result=modal_jq.find("span.result").get(0);
+    form.append('username',$("#resetpassword-user").text());
+    form.append('new_password',$("input[name=\"new_password\"]").val());
+    fetch("/admin/changepw",{
+        method:'POST',
+        credentials:'same-origin',
+        headers:{'Accept':'application/json'},
+        body:form
+    }).then(res=>{
+        if (res.ok){
+            result.innerText="重置密码成功";
+            result.classList.add("alert-success");
+            setTimeout(()=>{modal_jq.modal('hide')},500);
+        }else{
+            return res.json().then((res)=>{throw new Error(res.error);})
+        }
+    }).catch(err=>{
+        result.innerText="重置密码失败:"+err.message;
+        result.classList.add("alert-danger");
+    });
+});
+$("#btn-confirm").on('click',(ev)=>{
+    if (!confirm_url) return;
+    let modal_jq=$(ev.target).parents("div.modal");
+    let result=modal_jq.find("span.result").get(0);
+    fetch(confirm_url,confirm_init_obj).then((res)=>{
+        if (res.ok){
+            result.innerText="操作完成";
+            result.classList.add("alert-success");
+            setTimeout(()=>{modal_jq.modal('hide')},500);
+        }else{
+            return res.json().then((res)=>{throw new Error(res.error);})
+        }
+    }).catch(err=>{
+        result.innerText="操作失败"+err.message;
+        result.classList.add("alert-danger");
+    })
+});
+function clear_result(ev){
+    let result=$(ev.target).find("span.result").get(0);
+    result.innerText="";
+    result.className="alert result";
+}
+$("#userinfoModal").on('hidden.bs.modal',(ev)=>{
+    clear_result(ev);
+    search_user();
+});
+$("#mdl-resetpassword").on('hidden.bs.modal',(ev)=>{
+    clear_result(ev);
+    $("input[name=\"new_password\"]").val("")
+});
+$("#mdl-confirm").on('hidden.bs.modal',(ev)=>{
+    clear_result(ev);
+    confirm_url=null;
+    confirm_init_obj=null;
+    search_user();
+});
+window.editEvents={
+    'click .edit':function (e,val,row,idx) {
+        let username=$("#userinfoModal input[name=\"username\"]");
+        username.val(row['username']);
+        username.prop('disabled',true);
+        let tags_input=$("#mdl-tag-list");
+        tags_input.tagsinput('removeAll');
+        if (row.tags)
+            for (let i=0;i<row.tags.length;++i)
+                tags_input.tagsinput('add',row.tags[i]);
+        $("#userinfoModal").modal('show');
+    },
+    'click .suspend':function (e,val,row,idx) {
+        let btn=$("button#btn-confirm");
+        btn.text("确认暂停账户");
+        btn.get(0).classList="btn btn-warning";
+        let form=new FormData();
+        form.append('username',row.username);
+        form.append('level','2');
+        confirm_url='/admin/suspend';
+        confirm_init_obj={method:'POST',headers:{'Accept':'application/json'},credentials:'same-origin',body:form};
+        $("#mdl-confirm div.modal-body").html('<p>确认暂停账户<code>'+row.username+'</code>？</p>');
+        $("#mdl-confirm").modal('show');
+    },
+    'click .delete':function (e,val,row,idx) {
+        let btn=$("button#btn-confirm");
+        btn.text("确认永久禁用账户");
+        btn.get(0).classList="btn btn-danger";
+        let form=new FormData();
+        form.append('username',row.username);
+        form.append('level',3);
+        confirm_url='/admin/suspend';
+        confirm_init_obj={method:'POST',headers:{'Accept':'application/json'},credentials:'same-origin',body:form};
+        $("#mdl-confirm div.modal-body").html('<p>确认永久禁用<code>'+row.username+'</code>？</p>');
+        $("#mdl-confirm").modal('show');
+    },
+    'click .reset-password':function (e,val,row,idx) {
+        $("#resetpassword-user").text(row.username);
+        $("input[name=\"new-password\"]").val("");
+        $("#mdl-resetpassword").modal('show');
+    },
+    'click .restore':function (e,val,row,idx) {
+        let btn=$("button#btn-confirm");
+        btn.text("确认恢复账户");
+        btn.get(0).classList="btn btn-success";
+        let form=new FormData();
+        form.append('username',row.username);
+        form.append('level','1');
+        confirm_url='/admin/suspend';
+        confirm_init_obj={method:'POST',headers:{'Accept':'application/json'},credentials:'same-origin',body:form};
+        $("#mdl-confirm div.modal-body").html('<p>确认恢复账户<code>'+row.username+'</code>？</p>');
+        $("#mdl-confirm").modal('show');
+    }
+};
+let last_search_user_elem=null;
+function search_user(elem) {
+    let input=document.getElementById("txt-username");
+    let result=document.getElementById("user-result");
+    let form=new FormData();
+    input.classList.remove('is-invalid');
+    if (!elem) elem=last_search_user_elem; else last_search_user_elem=elem;
+    if (!elem) return;
+    if (elem.id==="btn-search-user"){
+        let username=input.value;
+        if (username==="") {
+            input.classList.add('is-invalid');
+            return;
+        }
+        form.append('patten',username);
+    }else if (elem.id==="btn-show-all-user"){
+        form.append('is_all','1');
+    }
+    fetch('./search_user',{method:'POST',credentials:'same-origin',body:form,headers:{'Accept':'application/json'}})
+        .then(res=>{if (res.ok){return res.json();}else throw new Error('request failed:'+res.statusText)})
+        .catch(err=>{
+            result.innerHTML='<p class="alert alert-danger">查询失败</p>';
+            console.log(err);
+        }).then((res)=>{
+            if (res.length===0){
+                result.innerHTML='<p class="alert alert-danger">未搜到符合条件的用户</p>';
+            }else{
+                result.innerHTML='<table data-toggle="table" id="user-table"></table>';
+                $("#user-table").bootstrapTable({
+                    columns:[
+                        {field:'id',title:'用户ID'},
+                        {field:'username',title:'用户名'},
+                        {field:'status',title:'用户状态',formatter:"status_tostring"},
+                        {field:'tags',title:'用户标签',formatter:"tag_formatter"},
+                        {field:'operate',title:'操作',formatter:"operateFormatter",events:"editEvents"}
+                        ],
+                    data:res
+                });
+            }
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,11 @@
+<meta charset="UTF-8">
+{% if stats or stats|count == 0%}
+<table id="stats" class="result">
+    <tr><th>域名</th><th>访问时间</th><th>IP</th></tr>
+    {% for x in stats %}
+    <tr><td>{{ x.0 }}</td><td>{{ x.1 }}</td><td>{{ x.2 }}</td></tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>没有记录</p>
+{% endif %}

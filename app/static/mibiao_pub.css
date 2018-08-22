@@ -1,0 +1,25 @@
+@import url("https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css");
+body{
+    width: 80%;
+    margin: 0 auto;
+    padding: 0;
+    overflow: auto;
+}
+#domains{
+    width: 60%;
+    float: left;
+    text-align: center;
+}
+#contact:before{
+    content:"联系方式";
+}
+#contact{
+    background-color: rgba(211,211,211,0.7);
+    border-radius: 0.5em;
+    padding:2em;
+    width: 15%;
+    float:right;
+}
+#c-wechat, #c-qq, #c-phone, #c-email{
+    font-family: monospace;
+}

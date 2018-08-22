@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html class="no-js" lang="zh_CN"><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="shortcut icon" href="https://jsofttheme.com/omunaz-preview/assets/img/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+    <title>烧饼域名停放</title>
+    <link href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <!--=== Slicknav CSS ===-->
+    <link href="{{ url_for('static',filename="slicknav.min.css") }}" rel="stylesheet">
+    <link href="{{ url_for('static',filename="index.reset.css") }}" rel="stylesheet">
+    <link href="{{ url_for('static',filename="index.style.css") }}" rel="stylesheet">
+    <link href="{{ url_for('static',filename="index.responsive.css") }}" rel="stylesheet">
+    <!--[if lt IE 9]>
+        <script src="//oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+        <script src="//oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style type="text/css">
+        .icon {
+            width: 1em; height: 1em;
+            vertical-align: -0.15em;
+            fill: currentColor;
+            overflow: hidden;
+            font-size: 40px;
+        }
+    </style>
+</head>
+<body>
+<!-- PreHeader Start -->
+<div class="preheader-area">
+    <div class="container">
+        <div class="slicknav_menu">
+            <a href="#"  class="slicknav_btn slicknav_collapsed" >
+                <span class="slicknav_menutxt"></span>
+                <span class="slicknav_icon slicknav_no-text">
+        <span class="slicknav_icon-bar"></span>
+        <span class="slicknav_icon-bar"></span>
+        <span class="slicknav_icon-bar"></span></span>
+            </a>
+            <nav class="slicknav_nav slicknav_hidden" aria-hidden="true" role="menu"><a href="contact.html" role="menuitem">Contact Us</a></nav>
+        </div>
+        <div class="row">
+            <div class="col-lg-6 d-none d-lg-block ">
+                <div class="header-top-left infinity-0">
+                    <i style="color:#46C3E8" class="fab fa-qq"></i> 2660000000
+                    <a href="mailto:sales@owl.net"><i class="fa fa-envelope"></i> sales@owl.net</a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-right">
+                {% if 'username' in session %}
+                    <a href="/dashboard"><i class="fa fa-user"></i>主面板</a>
+                {% else %}
+                <div class="login-reg">
+                    <a href="/login"><i class="fa fa-user"></i> 登录</a>
+                    <a href="/register"><i class="fa fa-user-plus"></i>注册</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <!--  PreHeader Left End -->
+    </div>
+</div>
+</div>
+<!-- PreHeader Top End -->
+
+<!--== Header Area Start ==-->
+<header id="header-area">
+    <!-- Header Top Start -->
+    <div class="header-top-area">
+        <div class="container">
+            <div class="row">
+                <!-- Logo Area Start -->
+                <div class="col-xl-4 col-lg-3 text-center text-lg-left infinity-1">
+                    <a href="{{ url_for('index') }}" class="logo-area">
+                        <img src="{{ url_for('static',filename="logo.png") }}" alt="">
+                    </a>
+                </div>
+                <!-- Logo Area End -->
+                <!-- HeaderTop Info Start -->
+                <div class="col-xl-8 col-lg-9 d-none d-md-block">
+                    <div class="row">
+                        <!-- HeaderTop Box Item -->
+                        <!-- HeaderTop Box Item -->
+                        <div class="col-md-4 col-sm-6"></div>
+                        <div class="col-md-4 col-sm-6" style="max-width: 29%;"></div>
+                        <div class="col-md-3 col-sm-12">
+                            <div class="headertop-info-item" style="margin-top: 7px;">
+                                <div class="info-icon">
+                                    <i class="fab fa-qq" aria-hidden="true"></i>
+                                </div>
+                                <div class="info-text">
+                                    <b>2660000000</b> sales@owl.net
+                                </div>
+                            </div>
+                        </div>
+                        <!-- HeaderTop Box Item -->
+                    </div>
+                </div>
+                <!-- HeaderTop Info End -->
+            </div>
+        </div>
+    </div>
+    <!-- Header Top End -->
+
+    <!-- Header Bottom Start -->
+
+    <!-- Header Bottom End -->
+</header>
+<!--== Header Area End ==-->
+
+<!--== Slider Area Start ==-->
+
+<!--== Slider Area End ==-->
+
+<!--== Right Think Area Start ==-->
+
+<!--== Right Think Area End ==-->
+
+<!--== Service Area Start ==-->
+<section id="service-area" class="service-bg section-padding">
+    <div class="container">
+        <div class="row">
+            <!-- Section Title Start -->
+            <div class="col-lg-12 text-center">
+                <div class="section-title" style="margin-top: 40px;margin-bottom: 100px;">
+                    <h2>Our <span>Services</span></h2>
+                </div>
+            </div>
+            <!-- Section Title End -->
+        </div>
+
+        <div class="row" style="margin-bottom: 100px;">
+            <!-- Single Service Start -->
+            <div class="col-lg-4 col-sm-6 text-center">
+                <div class="single-service">
+                    <div class="service-icon">
+                        <i class="fa fa-globe"></i>
+                    </div>
+                    <h3 >免费的域名停放服务</h3>
+                    <p>为您的域名设置停放信息， <br />让潜在买家能够方便快速地找到您， <br />促成交易。</p>
+                </div>
+            </div>
+            <!-- Single Service End -->
+            <!-- Single Service Start -->
+            <div class="col-lg-4 col-sm-6 text-center">
+                <div class="single-service">
+                    <div class="service-icon">
+                        <i class="fa fa-window-restore"></i>
+                    </div>
+                    <h3>免费的域名跳转服务</h3>
+                    <p>闲置域名只想做个URL跳转？ <br />不用再为购买和搭建服务器发愁了， <br />烧饼米表已为您免费提供URL跳转服务。</p>
+                </div>
+            </div>
+            <!-- Single Service End -->
+            <!-- Single Service Start -->
+            <div class="col-lg-4 col-sm-6 text-center">
+                <div class="single-service">
+                    <div class="service-icon">
+                        <i class="fa fa-address-card"></i>
+                    </div>
+                    <h3>免费签发HTTPS证书</h3>
+                    <p>所有停放和跳转的域名， <br />我们均为您自动签发免费HTTPS证书， <br />无须任何成本即可开展业务。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section id="about-area" class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <div class="section-title">
+                    <h2>About <span>Us</span></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- About Content Start -->
+    <h2 style="text-align: center; font-family: Microsoft YaHei UI; font-weight: 500">免费提供域名停放和URL跳转服务，支持自动签发免费HTTPS证书。</h2>
+    <div class="headertop-info-right" style="text-align: center;" ><a href="/register" title="立即加入" class="get-quote theme-btn" >立即注册</a></div>
+</section>
+<footer id="footer-area">
+    <div id="footer-bottom">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-sm-12">
+                    <div class="footer-content">
+                        <p>Copyright Ⓒ 2018 Owl Limited. All rights reserved.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+<div class="scroll-top" style="display: block;">
+    <i class="fa fa-angle-up"></i>
+</div>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script src="{{ url_for('static',filename='index.js') }}"></script>
+</body></html>

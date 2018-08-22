@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ domain }} is for sale!</title>
+    <script src='https://www.google.com/recaptcha/api.js'></script>
+</head>
+<body>
+<h1>{{ domain }} is waiting for you!</h1>
+<p>Contact now:</p>
+<form action="/offer" method="post" id="form-submit" name="form">
+    <label for="txt-name">your name</label><input type="text" id="txt-name" name="name"/><br/>
+    <label for="txt-email">your email</label><input type="email" id="txt-email" name="email"/><br/>
+    <label for="txt-message">your offer</label><input type="text" id="txt-message" name="message"/><br/>
+    <p>Google recaptcha below:</p>
+    <div class="g-recaptcha" data-sitekey="6Ldyq1wUAAAAAO7LbTSahLJXzKOvx6OTvzUsMKEK"></div>
+    <button onclick="sendOffer()">提交</button>
+</form>
+</body>
+<script>
+    function sendOffer(){
+        let form=new FormData(document.querySelector("form#form-submit"));
+        fetch('./offer', {
+            method:'POST',
+            data:form
+        }).then((resp)=>{
+            if (resp.ok){
+                alert('报价已提交')
+            }else{
+                alert('报价被拒绝')
+            }
+        }).catch((error)=>{
+            alert('网络错误');
+            console.log(error);
+        });
+        return false;
+    }
+</script>
+</html>

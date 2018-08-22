@@ -1,0 +1,37 @@
+{% extends "admin_base.html" %}
+{% block title %}主面板{% endblock %}
+{% block content %}
+    <div class="row" style="padding-top: 1em">
+    <div class="col-auto">
+    <div class="card mb-3" style="width: 18rem;">
+        <div class="card-header">您的域名访问</div>
+        <div class="card-body">
+            <span>今日访问 <span class="i-number" id="txt-today-pv">---</span></span>
+            <span class="ml-2">历史总访问<span class="i-number" id="txt-total-pv">---</span></span>
+            <button class="btn btn-primary" id="btn-show-total-pv">显示历史访问</button>
+        </div>
+    </div>
+    </div>
+    <div class="col-auto">
+    <div class="card mb-3" style="width: 18rem;">
+        <div class="card-header">
+            您的报价
+        </div>
+        <div class="card-body">
+            <p>未处理报价 <span class="i-number" id="txt-unprocessed-offers"></span></p>
+            <a class="btn btn-primary" href="/domain/offer?detail=1">查看报价列表</a>
+        </div>
+    </div>
+    </div>
+    </div>
+{% endblock %}
+{% block script %}<script>
+let pv=document.getElementById("txt-today-pv");
+let offers=document.getElementById("txt-unprocessed-offers");
+let pv_2=document.getElementById('txt-total-pv');
+fetch('/domain/stats',{credentials:'same-origin',headers:{'Accept':'application/json'}}).then(resp=>{if (resp.ok){return resp.json()}throw new Error('http failed')}).catch(()=>pv.innerText="--").then((data)=>{pv.innerText=data});
+fetch('/domain/offer',{credentials:'same-origin',headers:{'Accept':'application/json'}}).then(resp=>{if (resp.ok){return resp.json()}throw new Error('http failed')}).catch(()=>offers.innerText="--").then((data)=>{offers.innerText=data});
+$('#btn-show-total-pv').on('click',()=>{
+    fetch('/domain/stats?ignore_date=1',{credentials:'same-origin',headers:{'Accept':'application/json'}}).then(resp=>{if (resp.ok){return resp.json()}throw new Error('http failed')}).catch(()=>{pv_2.innerText="--"}).then((data)=>{pv_2.innerText=data});
+});
+</script>{% endblock %}

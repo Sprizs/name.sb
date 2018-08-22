@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}主页{% endblock %} - 烧饼米表 Alpha</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+{% block addtional_head %}
+{% endblock %}
+<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.12.1/bootstrap-table.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{{ url_for("static",filename="main.css") }}" />
+<link rel="stylesheet" href="{{ url_for('static',filename="bs4-comp-custom.css") }}"/>
+</head>
+<body>
+<div class="container-fluid">
+<nav class="nav nav-light bg-light justify-content-between">
+    <a class="navbar-brand mx-3" href="/">烧饼米表 Alpha</a>
+    <ul class="navbar-nav mr-auto">
+    </ul>
+    <ul class="navbar-nav">
+        {% if session['username'] %}
+        <li class="nav-item"><a class="nav-link" href="/dashboard">{{ session['username'] }}</a></li>
+        {% endif %}
+    </ul>
+    <a class="nav-link">{% if session['username'] %}</a>
+    <a class="btn btn-outline-danger m-1" href="/logout">退出</a>
+    {% else %}
+    <a class="btn btn-outline-success" href="/login">登录</a>
+    {% endif %}
+</nav><div class="alert alert-danger mt-2">因业务调整，请各位用户将托管域名的NS改为<code>ns1.name.sb</code> <code>ns2.name.sb</code>。带来的不便敬请谅解</div>
+{% with msgs=get_flashed_messages(with_categories=True) %}
+    {% if msgs %}
+        {% for cate,msg in msgs %}
+            {% if cate=="message" %}
+                <div class="alert alert-success mt-2" role="alert">{{ msg }}</div>
+            {% elif cate=="error" %}
+                <div class="alert alert-danger mt-2" role="alert">{{ msg }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+{% block body %}{% endblock %}
+</div>
+<footer class="footer">
+    <div class="container-fluid text-center">
+        Cat Networks 2018
+        <a href="/about">联系我们</a>
+    </div>
+</footer>
+</body>
+<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdn.bootcss.com/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.bootcss.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.12.1/bootstrap-table.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.12.1/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="{{ url_for("static",filename="common.js") }}"></script>
+{% block script %}{% endblock %}
+</html>
